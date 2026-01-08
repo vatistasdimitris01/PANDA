@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOPHIA RADAR | PANDA SYSTEM</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-yellow: #facc15;
+            --accent-red: #f87171;
+            --border: #334155;
+            --font-mono: 'Fira Code', monospace;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Header */
+        header {
+            padding: 15px 20px;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            background: var(--bg-card);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        /* Main Grid */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-template-rows: 1fr 200px;
+            gap: 15px;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .text-dim {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        /* Device List (Left) */
+        .device-panel {
+            grid-row: 1 / -1;
+            overflow-y: auto;
+        }
+
+        .device-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .device-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .device-name {
+            font-size: 1rem;
+            color: var(--accent-blue);
+            margin-bottom: 4px;
+            font-weight: 600;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .device-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .device-security {
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+
+        .score-bar {
+            height: 3px;
+            background: var(--border);
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        /* Radar View (Top Right) */
+        .radar-panel {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #radar-canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* Stats/Modules (Bottom Right) */
+        .modules-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .module-content {
+            padding: 15px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .stat-val {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Utility Classes */
+        .text-green {
+            color: var(--accent-green);
+        }
+
+        .text-yellow {
+            color: var(--accent-yellow);
+        }
+
+        .text-red {
+            color: var(--accent-red);
+        }
+
+        .bg-green {
+            background: var(--accent-green);
+        }
+
+        .bg-yellow {
+            background: var(--accent-yellow);
+        }
+
+        .bg-red {
+            background: var(--accent-red);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
+        }
+
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+            margin-right: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            main {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr auto;
+                padding: 10px;
+            }
+
+            .device-panel {
+                grid-row: 2;
+            }
+
+            .radar-panel {
+                grid-row: 1;
+                height: 300px;
+            }
+
+            .modules-panel {
+                grid-row: 3;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-title">
+            <span class="text-green">PANDA</span> // SOPHIA_RADAR
+        </div>
+        <div class="header-info">
+            <div class="badge"><i class="fas fa-microchip"></i> <span id="sys-host">LOCALHOST</span></div>
+            <div class="badge"><i class="fas fa-network-wired"></i> <span id="sys-ip">127.0.0.1</span></div>
+            <div class="badge"><span class="live-indicator"></span> <span id="sys-time">00:00:00</span></div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Left: Device List -->
+        <div class="card device-panel">
+            <div class="card-header">
+                <span>DETECTED SIGNALS</span>
+                <span class="text-dim" id="device-count">0 DEVICES</span>
+            </div>
+            <div id="device-list-container">
+                <!-- Items injected here -->
+            </div>
+        </div>
+
+        <!-- Right Top: Radar -->
+        <div class="card radar-panel">
+            <span
+                style="position: absolute; top: 15px; left: 15px; font-size: 0.8rem; color: var(--text-secondary);">SATELLITE
+                VIEW [BETA]</span>
+            <canvas id="radar-canvas"></canvas>
+        </div>
+
+        <!-- Right Bottom: Modules -->
+        <div class="modules-panel">
+            <div class="card">
+                <div class="card-header">SHODAN QUICK QUERIES [OFFLINE]</div>
+                <div class="module-content">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="badge" style="cursor: not-allowed; opacity: 0.5;">Open RDP</button>
+                        <button class="badge" style="cursor: not-allowed; opacity: 0.5;">Telnet</button>
+                        <button class="badge" style="cursor: not-allowed; opacity: 0.5;">Cameras</button>
+                    </div>
+                    <div style="margin-top: 15px; opacity: 0.5; font-size: 0.75rem;">
+                        > Passive Mode Active. Active queries disabled for stealth.
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">SPECTRUM ANALYSIS</div>
+                <div class="module-content">
+                    <div class="stat-row"><span>2.4GHz Band:</span> <span class="stat-val" id="stat-24">0</span></div>
+                    <div class="stat-row"><span>5GHz Band:</span> <span class="stat-val" id="stat-5">0</span></div>
+                    <div class="stat-row"><span>BLE Devices:</span> <span class="stat-val" id="stat-ble">0</span></div>
+                    <div class="stat-row"><span>Threat Level:</span> <span class="stat-val text-green"
+                            id="stat-threat">LOW</span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // --- Radar Logic ---
+        const canvas = document.getElementById('radar-canvas');
+        const ctx = canvas.getContext('2d');
+        let devices = [];
+
+        function resizeCanvas() {
+            const parent = canvas.parentElement;
+            const size = Math.min(parent.clientWidth, parent.clientHeight) * 0.95;
+            canvas.width = size;
+            canvas.height = size;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawRadar() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Grid
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+
+            // Circles (Distance rings)
+            [0.25, 0.5, 0.75, 1].forEach(r => {
+                ctx.beginPath();
+                ctx.arc(cx, cy, (w / 2 - 10) * r, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+
+            // Crosshair
+            ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+
+            // Me
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+
+            // Devices
+            devices.forEach(d => {
+                // Map distance 0-50m to radius
+                let dist = d.distance || 0;
+                if (dist > 50) dist = 50;
+                const rRatio = dist / 50;
+                const radius = (w / 2 - 20) * rRatio;
+
+                // Hash bssid to angle
+                const angle = (parseInt(d.bssid.replace(/:/g, '').slice(-6), 16) % 360) * (Math.PI / 180);
+
+                const x = cx + radius * Math.cos(angle);
+                const y = cy + radius * Math.sin(angle);
+
+                // Draw Dot
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                let color = '#38bdf8'; // Blue
+                if (d.type === 'BLE') color = '#a78bfa'; // Purple
+                if (d.score > 20) color = '#facc15'; // Yellow
+                if (d.score > 50) color = '#f87171'; // Red
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Label
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = '10px Fira Code';
+                ctx.fillText(d.ssid.substring(0, 8), x + 6, y + 3);
+            });
+
+            requestAnimationFrame(drawRadar);
+        }
+        drawRadar();
+
+        // --- Data Logic ---
+        async function update() {
+            try {
+                const res = await fetch('/api/scan');
+                const data = await res.json();
+                devices = data.devices;
+
+                // Update Header Time
+                const date = new Date();
+                document.getElementById('sys-time').innerText = date.toLocaleTimeString();
+
+                // Update List
+                renderList(devices);
+                updateStats(devices);
+            } catch (e) {
+                console.error("Scan failed", e);
+            }
+        }
+
+        function renderList(devs) {
+            const container = document.getElementById('device-list-container');
+            container.innerHTML = '';
+            document.getElementById('device-count').innerText = `${devs.length} DEVICES`;
+
+            devs.sort((a, b) => (b.score || 0) - (a.score || 0)); // High risk first
+
+            devs.forEach(d => {
+                let riskClass = 'bg-green';
+                let riskText = 'text-green';
+                let chatter = 'Background chatter - score ' + d.score;
+
+                if (d.score > 20) { riskClass = 'bg-yellow'; riskText = 'text-yellow'; }
+                if (d.score > 50) { riskClass = 'bg-red'; riskText = 'text-red'; chatter = 'Possible hostile node - score ' + d.score; }
+
+                const el = document.createElement('div');
+                el.className = 'device-item';
+                el.innerHTML = `
+                    <div class="device-name">${d.ssid} <span style="font-size:0.7em; color:var(--text-secondary); float:right;">${d.type}</span></div>
+                    <div class="device-meta">
+                        <span>BSSID: ${d.bssid}</span>
+                        <span>RSSI: ${d.rssi} dBm</span>
+                        <span>Range: ${d.distance}m</span>
+                        <span>Freq: ${d.frequency} MHz</span>
+                    </div>
+                    <div style="font-size: 0.7rem; color: ${d.score > 20 ? 'var(--accent-yellow)' : 'var(--accent-green)'}; margin-bottom: 5px;">
+                        ${chatter}
+                    </div>
+                    <div class="device-security">${d.security}</div>
+                    <div class="score-bar">
+                        <div class="score-fill ${riskClass}" style="width: ${d.score}%"></div>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function updateStats(devs) {
+            const c24 = devs.filter(d => d.frequency < 3000 && d.type === 'WIFI').length;
+            const c5 = devs.filter(d => d.frequency > 5000 && d.type === 'WIFI').length;
+            const cble = devs.filter(d => d.type === 'BLE').length;
+            const highRisk = devs.some(d => d.score > 50);
+
+            document.getElementById('stat-24').innerText = c24;
+            document.getElementById('stat-5').innerText = c5;
+            document.getElementById('stat-ble').innerText = cble;
+
+            const threatEl = document.getElementById('stat-threat');
+            if (highRisk) {
+                threatEl.innerText = "HIGH";
+                threatEl.className = "stat-val text-red";
+            } else if (devs.length > 10) {
+                threatEl.innerText = "ELEVATED";
+                threatEl.className = "stat-val text-yellow";
+            } else {
+                threatEl.innerText = "LOW";
+                threatEl.className = "stat-val text-green";
+            }
+        }
+
+        setInterval(update, 2000);
+        update(); // First run
+    </script>
+</body>
+
+</html>
