@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PANDA HUD</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --fg: #ffffff;
+            --accent: #ffffff;
+            --dim: #444444;
+            --border: 1px solid #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: var(--border);
+            height: 60px;
+        }
+
+        .brand {
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 1.2rem;
+        }
+
+        /* MAIN RADAR VIEW */
+        .radar-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #radar-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .radar-stats {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.7rem;
+            color: var(--dim);
+            pointer-events: none;
+        }
+
+        .location-stat {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            color: var(--dim);
+            text-align: right;
+            pointer-events: none;
+        }
+
+        /* BOTTOM DRAWER / LIST */
+        .drawer {
+            height: 40vh;
+            background: #0a0a0a;
+            border-top: var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            transform: translateY(35vh);
+            /* Collapsed */
+        }
+
+        .drawer.expanded {
+            transform: translateY(0);
+        }
+
+        .drawer-handle {
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: var(--border);
+            background: #111;
+        }
+
+        .handle-bar {
+            width: 40px;
+            height: 4px;
+            background: var(--dim);
+            border-radius: 2px;
+        }
+
+        .device-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .device-card {
+            background: #111;
+            border: 1px solid #222;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dev-main {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dev-ssid {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .dev-meta {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .dev-signal {
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-align: right;
+        }
+
+        .tab-bar {
+            display: flex;
+            height: 50px;
+            border-top: var(--border);
+            background: #000;
+            z-index: 10;
+        }
+
+        .tab-btn {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: #111;
+            border-top: 2px solid #fff;
+        }
+
+        /* Fullscreen Overlay for Modes */
+        .overlay-page {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 110px);
+            background: #000;
+            z-index: 5;
+            display: none;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .overlay-page.active {
+            display: block;
+        }
+
+        .big-stat {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="hud-header">
+        <div class="brand">PANDAOS</div>
+        <div style="font-size: 0.8rem">v3.1</div>
+    </header>
+
+    <!-- Radar View (Default) -->
+    <div class="radar-container" id="view-radar">
+        <div class="radar-stats">
+            SCANNING...<br>
+            <span id="target-count">0</span> TARGETS
+        </div>
+        <div class="location-stat">
+            <span id="gps-lat">--.--</span> N<br>
+            <span id="gps-lon">--.--</span> E
+        </div>
+        <canvas id="radar-canvas"></canvas>
+    </div>
+
+    <!-- Scanner List View (Overlay) -->
+    <div class="overlay-page" id="view-list">
+        <h2>DETECTED DEVICES</h2>
+        <div id="full-list"></div>
+    </div>
+
+    <!-- System View (Overlay) -->
+    <div class="overlay-page" id="view-system">
+        <h2>SYSTEM STATUS</h2>
+        <div class="stat-label">THREAT LEVEL</div>
+        <div class="big-stat" id="sys-threat">LOW</div>
+
+        <div class="stat-label">LOCATION PROVIDER</div>
+        <div class="big-stat" style="font-size: 1.5rem" id="sys-loc">Initialize</div>
+
+        <div class="stat-label">IP ADDRESS</div>
+        <div class="big-stat" style="font-size: 1.5rem" id="sys-ip">Scanning...</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="tab-bar">
+        <div class="tab-btn active" onclick="switchView('radar')">RADAR</div>
+        <div class="tab-btn" onclick="switchView('list')">LIST</div>
+        <div class="tab-btn" onclick="switchView('system')">SYSTEM</div>
+    </nav>
+
+    <script>
+        // State
+        let devices = [];
+        let locationData = { lat: 0, lon: 0 };
+
+        function switchView(view) {
+            document.querySelectorAll('.overlay-page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            // Handle Radar Visibility
+            document.getElementById('view-radar').style.visibility = (view === 'radar') ? 'visible' : 'hidden';
+
+            if (view !== 'radar') {
+                document.getElementById('view-' + view).classList.add('active');
+            }
+
+            const btnIndex = ['radar', 'list', 'system'].indexOf(view);
+            document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+        }
+
+        // Radar Logic
+        const canvas = document.getElementById('radar-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function draw() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Rings
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            [0.3, 0.6, 0.9].forEach(r => {
+                ctx.beginPath();
+                ctx.arc(cx, cy, (Math.min(w, h) / 2) * r, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+
+            // Sweep
+            const time = Date.now() / 2000;
+            const sweepAngle = (time % 1) * Math.PI * 2;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, Math.min(w, h), sweepAngle - 0.2, sweepAngle);
+            ctx.lineTo(cx, cy);
+            const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, Math.min(w, h) / 2);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Me
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+
+            // Devices
+            devices.forEach(d => {
+                const maxDist = 50;
+                let dist = d.distance || maxDist;
+                if (dist > maxDist) dist = maxDist;
+                const r = (dist / maxDist) * (Math.min(w, h) / 2 * 0.9);
+
+                // Hash angle
+                const angle = parseInt(d.bssid.replace(/:/g, '').slice(-4), 16) % 360 * (Math.PI / 180);
+
+                const x = cx + r * Math.cos(angle);
+                const y = cy + r * Math.sin(angle);
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = d.score > 20 ? '#f00' : '#fff';
+                ctx.fill();
+
+                ctx.fillStyle = '#666';
+                ctx.font = '10px JetBrains Mono';
+                ctx.fillText(d.ssid.substring(0, 8), x + 6, y + 3);
+            });
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // Data Fetching
+        async function fetchScan() {
+            try {
+                const res = await fetch('/api/scan');
+                const data = await res.json();
+
+                devices = data.devices || [];
+                locationData = data.location || { lat: 0, lon: 0 };
+
+                // Update Stats
+                document.getElementById('target-count').innerText = devices.length;
+                document.getElementById('gps-lat').innerText = locationData.lat?.toFixed(4) || '--.--';
+                document.getElementById('gps-lon').innerText = locationData.lon?.toFixed(4) || '--.--';
+                document.getElementById('sys-loc').innerText = locationData.provider?.toUpperCase();
+
+                // Update List
+                const listHTML = devices.map(d => `
+                    <div class="device-card">
+                        <div class="dev-main">
+                            <div class="dev-ssid">${d.ssid}</div>
+                            <div class="dev-meta">${d.bssid} • ${d.type}</div>
+                        </div>
+                        <div class="dev-signal">
+                            ${d.rssi}dBm<br>
+                            ${d.distance}m
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('full-list').innerHTML = listHTML;
+
+                // Threat Update
+                const highRisk = devices.some(d => d.score > 50);
+                document.getElementById('sys-threat').innerText = highRisk ? 'HIGH' : 'LOW';
+                document.getElementById('sys-threat').style.color = highRisk ? '#f00' : '#fff';
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        setInterval(fetchScan, 2000);
+        fetchScan();
+
+    </script>
+</body>
+
+</html>

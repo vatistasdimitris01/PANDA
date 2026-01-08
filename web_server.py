@@ -26,14 +26,15 @@ def background_scan():
 
 @app.route('/')
 def index():
-    return render_template('app.html')
+    return render_template('mobile_hud.html')
 
 @app.route('/api/scan')
 def get_scan():
     return jsonify({
         "status": "active",
         "timestamp": time.time(),
-        "devices": latest_scan
+        "devices": latest_scan,
+        "location": scanner.get_location()
     })
 
 if __name__ == '__main__':
