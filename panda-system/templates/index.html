@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANDA HUD | Passive Defense</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cyan: #00f2ff;
+            --blue-glow: rgba(0, 242, 255, 0.3);
+            --bg-dark: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.8);
+            --red-alert: #ff0055;
+            --yellow-warn: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--cyan);
+            font-family: 'JetBrains+Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--cyan);
+        }
+
+        header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--cyan);
+            background: rgba(0, 242, 255, 0.05);
+            text-shadow: 0 0 10px var(--cyan);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            font-weight: 700;
+        }
+
+        .system-status {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .radar-container {
+            position: relative;
+            background: var(--panel-bg);
+            border: 1px solid var(--cyan);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0, 242, 255, 0.1);
+        }
+
+        #radar-canvas {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .data-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .device-list-container {
+            flex: 1;
+            background: var(--panel-bg);
+            border: 1px solid var(--cyan);
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--cyan);
+            color: var(--cyan);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.1);
+        }
+
+        .risk-high { color: var(--red-alert); text-shadow: 0 0 5px var(--red-alert); }
+        .risk-med { color: var(--yellow-warn); text-shadow: 0 0 5px var(--yellow-warn); }
+        .risk-low { color: #10b981; }
+
+        .timeline-panel {
+            height: 150px;
+            border: 1px solid var(--cyan);
+            background: rgba(0, 242, 255, 0.05);
+            padding: 10px;
+            font-size: 0.75rem;
+            overflow-y: auto;
+        }
+
+        .timeline-entry {
+            margin-bottom: 5px;
+            border-left: 2px solid var(--cyan);
+            padding-left: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Scan sweep effect */
+        .radar-sweep {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg at 50% 50%, rgba(0, 242, 255, 0.2) 0deg, transparent 90deg);
+            border-radius: 50%;
+            animation: sweep 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .controls {
+            padding: 15px;
+            border-top: 1px solid var(--cyan);
+            display: flex;
+            gap: 20px;
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        input {
+            background: transparent;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            padding: 5px 10px;
+            font-family: inherit;
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">PANDA • SYSTEM v1.0</div>
+        <div class="system-status">
+            STATUS: <span id="status-text">SCANNING...</span> | 
+            NODES: <span id="node-count">0</span> | 
+            LOCATION: LOCAL_ISO
+        </div>
+    </header>
+
+    <main>
+        <div class="radar-container">
+            <div class="radar-sweep"></div>
+            <canvas id="radar-canvas"></canvas>
+        </div>
+
+        <div class="data-panel">
+            <div class="controls">
+                <span>FILTER:</span>
+                <input type="text" id="filter-input" placeholder="SSID / BSSID...">
+                <label><input type="checkbox" id="risk-only"> HIGH RISK ONLY</label>
+            </div>
+            <div class="device-list-container">
+                <table id="device-table">
+                    <thead>
+                        <tr>
+                            <th>TYPE</th>
+                            <th>SSID / IDENTITY</th>
+                            <th>BSSID</th>
+                            <th>DIST</th>
+                            <th>RISK</th>
+                        </tr>
+                    </thead>
+                    <tbody id="device-body">
+                        <!-- Devices injected here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="timeline-panel" id="timeline">
+                <div class="timeline-entry">[SYSTEM] Initializing passive sweep...</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('radar-canvas');
+        const ctx = canvas.getContext('2d');
+        let devices = [];
+        let filterText = "";
+        let riskOnly = false;
+
+        function resize() {
+            const size = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight) * 0.9;
+            canvas.width = size;
+            canvas.height = size;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function drawRadar() {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const maxR = canvas.width / 2 - 20;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Circles
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.2)';
+            ctx.lineWidth = 1;
+            for(let i=1; i<=4; i++) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, (maxR/4)*i, 0, Math.PI*2);
+                ctx.stroke();
+            }
+
+            // Axis
+            ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.stroke();
+
+            // Self
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 4, 0, Math.PI*2);
+            ctx.fill();
+
+            // Devices
+            devices.forEach(dev => {
+                const distScale = Math.min(1, dev.distance / 20);
+                const r = distScale * maxR;
+                const angle = parseInt(dev.bssid.replace(/:/g,''), 16) % 360;
+                const rad = (angle * Math.PI) / 180;
+                
+                const dx = cx + r * Math.cos(rad);
+                const dy = cy + r * Math.sin(rad);
+
+                let color = '#10b981';
+                if(dev.risk > 50) color = '#ff0055';
+                else if(dev.risk > 20) color = '#f59e0b';
+
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color;
+                ctx.beginPath();
+                ctx.arc(dx, dy, 5 + (dev.risk/20), 0, Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.font = '10px JetBrains Mono';
+                ctx.fillText(dev.ssid.substring(0,10), dx + 8, dy + 4);
+            });
+
+            requestAnimationFrame(drawRadar);
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch('/api/scan');
+                const data = await res.json();
+                
+                let filtered = data.devices;
+                if(filterText) {
+                    filtered = filtered.filter(d => 
+                        d.ssid.toLowerCase().includes(filterText.toLowerCase()) || 
+                        d.bssid.toLowerCase().includes(filterText.toLowerCase())
+                    );
+                }
+                if(riskOnly) {
+                    filtered = filtered.filter(d => d.risk > 40);
+                }
+
+                devices = filtered;
+                updateUI(filtered);
+                document.getElementById('node-count').innerText = data.devices.length;
+                document.getElementById('status-text').innerText = "SYSTEM ACTIVE";
+            } catch(e) {
+                document.getElementById('status-text').innerText = "SERVER OFFLINE";
+            }
+        }
+
+        function updateUI(devs) {
+            const table = document.getElementById('device-body');
+            table.innerHTML = "";
+            devs.forEach(dev => {
+                const riskClass = dev.risk > 50 ? 'risk-high' : (dev.risk > 20 ? 'risk-med' : 'risk-low');
+                const row = `
+                    <tr>
+                        <td>WIFI</td>
+                        <td>${dev.ssid}</td>
+                        <td style="font-size: 0.7rem">${dev.bssid}</td>
+                        <td>${dev.distance}m</td>
+                        <td class="${riskClass}">${dev.risk}%</td>
+                    </tr>
+                `;
+                table.innerHTML += row;
+            });
+        }
+
+        document.getElementById('filter-input').addEventListener('input', (e) => filterText = e.target.value);
+        document.getElementById('risk-only').addEventListener('change', (e) => riskOnly = e.target.checked);
+
+        drawRadar();
+        setInterval(fetchData, 2000);
+    </script>
+</body>
+</html>
