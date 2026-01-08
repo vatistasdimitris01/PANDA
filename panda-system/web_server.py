@@ -26,7 +26,7 @@ def background_scan():
 
 @app.route('/')
 def index():
-    return render_template('dashboard.html')
+    return render_template('app.html')
 
 @app.route('/api/scan')
 def get_scan():

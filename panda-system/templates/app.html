@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANDA | Command</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <header class="mobile-header">
+        <div class="logo-area" style="margin-bottom: 0;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            PANDA
+        </div>
+        <button id="menu-btn" style="background: none; border: none; color: inherit;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            PANDA SYSTEM
+        </div>
+
+        <nav class="nav-links">
+            <a href="#" class="nav-item active" onclick="showPage('home')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('wifi')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                    <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                </svg>
+                Wi-Fi Scanner
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('ble')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="m7 7 10 10-5 5V2l5 5L7 17"></path>
+                </svg>
+                BLE Scanner
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('radar')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="2"></circle>
+                </svg>
+                Global Radar
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('system')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+                    </path>
+                </svg>
+                System Status
+            </a>
+        </nav>
+
+        <div class="status-badge">
+            <div class="status-row">
+                <span>HOST</span>
+                <span id="host-id">LOCALHOST</span>
+            </div>
+            <div class="status-row">
+                <span>UPTIME</span>
+                <span id="uptime">00:00:00</span>
+            </div>
+            <div class="status-row" style="margin-top: 8px;">
+                <span style="color: var(--muted-color)">STATUS</span>
+                <span style="color: #4ade80">● ONLINE</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="page-home">
+            <h1 class="page-title">Command Center</h1>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                                <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                            </svg>
+                            Wi-Fi Networks
+                        </div>
+                    </div>
+                    <div class="stat-value" id="count-wifi">0</div>
+                    <div class="stat-label">Networks Detected</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="m7 7 10 10-5 5V2l5 5L7 17"></path>
+                            </svg>
+                            BLE Devices
+                        </div>
+                    </div>
+                    <div class="stat-value" id="count-ble">0</div>
+                    <div class="stat-label">Beacons Nearby</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 2v20M2 12h20"></path>
+                            </svg>
+                            Threat Level
+                        </div>
+                    </div>
+                    <div class="stat-value" id="threat-level" style="color: #4ade80">LOW</div>
+                    <div class="stat-label">Passive Monitoring</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Recent Activity</div>
+                </div>
+                <div id="activity-feed">
+                    <div style="padding: 1rem; color: var(--muted-color); text-align: center;">Waiting for signal data
+                        form host...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WiFi Page -->
+        <div id="page-wifi" style="display: none;">
+            <h1 class="page-title">Wi-Fi Scanner</h1>
+            <div class="card">
+                <div id="wifi-list"></div>
+            </div>
+        </div>
+
+        <!-- BLE Page -->
+        <div id="page-ble" style="display: none;">
+            <h1 class="page-title">BLE Scanner</h1>
+            <div class="card">
+                <div id="ble-list"></div>
+            </div>
+        </div>
+
+        <!-- Radar Page -->
+        <div id="page-radar" style="display: none; height: calc(100vh - 150px);">
+            <h1 class="page-title">Global Radar</h1>
+            <div class="card"
+                style="height: 100%; display: flex; justify-content: center; align-items: center; background: #000; position: relative;">
+                <canvas id="radar-canvas" style="max-width: 100%; max-height: 100%;"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // UI Logic
+        const sidebar = document.getElementById('sidebar');
+        const menuBtn = document.getElementById('menu-btn');
+        const pages = ['home', 'wifi', 'ble', 'radar', 'system'];
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Close sidebar when clicking main content on mobile
+        document.querySelector('.main-content').addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        function showPage(pageId) {
+            // Hide all
+            pages.forEach(p => document.getElementById('page-' + p).style.display = 'none');
+            // Show target
+            const target = document.getElementById('page-' + pageId);
+            if (target) target.style.display = 'block';
+
+            // Update Nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.closest('.nav-item')?.classList.add('active');
+
+            if (window.innerWidth <= 768) sidebar.classList.remove('open');
+
+            // Resize radar if needed
+            if (pageId === 'radar') setTimeout(resizeRadar, 100);
+        }
+
+        // --- Data Logic ---
+        async function updateData() {
+            try {
+                const res = await fetch('/api/scan');
+                const data = await res.json();
+                const devs = data.devices || [];
+
+                // Update Counts
+                const wifiDevs = devs.filter(d => d.type === 'WIFI' || d.type === 'WIFI-NET');
+                const bleDevs = devs.filter(d => d.type === 'BLE');
+
+                document.getElementById('count-wifi').innerText = wifiDevs.length;
+                document.getElementById('count-ble').innerText = bleDevs.length;
+
+                // Update Lists
+                renderList('wifi-list', wifiDevs);
+                renderList('ble-list', bleDevs);
+
+                // Update Threat
+                const highRisk = devs.some(d => d.score > 50);
+                const elThreat = document.getElementById('threat-level');
+                if (highRisk) { elThreat.innerText = 'HIGH'; elThreat.style.color = '#ef4444'; }
+                else { elThreat.innerText = 'LOW'; elThreat.style.color = '#4ade80'; }
+
+                // Update Activity Feed (Subset)
+                renderActivity(devs.slice(0, 5));
+
+                // Update Radar Data
+                window.radarDevices = devs;
+
+            } catch (e) { console.error(e); }
+        }
+
+        function renderList(elementId, devices) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+
+            if (devices.length === 0) {
+                container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--muted-color)">Scanning... No devices nearby.</div>';
+                return;
+            }
+
+            container.innerHTML = devices.map(d => `
+                <div class="device-item">
+                    <div class="device-info">
+                        <h4>${d.ssid || 'Unknown'}</h4>
+                        <div class="device-meta">${d.bssid} • ${d.channel ? 'Ch ' + d.channel : ''} • ${d.frequency} MHz</div>
+                        <div class="device-meta" style="color: ${d.score > 20 ? '#ef4444' : 'var(--muted-color)'}">${d.security}</div>
+                    </div>
+                    <div class="rssi-badge" style="color: ${d.rssi > -60 ? '#4ade80' : 'inherit'}">
+                        ${d.rssi} dBm
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderActivity(devices) {
+            const container = document.getElementById('activity-feed');
+            if (devices.length === 0) return;
+            container.innerHTML = devices.map(d => `
+                <div class="device-item">
+                    <div class="device-info">
+                        <h4>New Signal Detected: ${d.ssid}</h4>
+                        <div class="device-meta">Distance: ~${d.distance}m</div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--muted-color)">Just now</div>
+                </div>
+             `).join('');
+        }
+
+        // --- Radar Canvas ---
+        const canvas = document.getElementById('radar-canvas');
+        const ctx = canvas.getContext('2d');
+        window.radarDevices = [];
+
+        function resizeRadar() {
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        }
+        window.addEventListener('resize', resizeRadar);
+
+        function drawRadar() {
+            if (document.getElementById('page-radar').style.display === 'none') {
+                requestAnimationFrame(drawRadar);
+                return;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Fade background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, w, h);
+
+            // Grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            [0.2, 0.4, 0.6, 0.8].forEach(r => {
+                ctx.arc(cx, cy, Math.min(w, h) / 2 * r, 0, Math.PI * 2);
+            });
+            ctx.stroke();
+
+            // Self
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+
+            // Devices
+            window.radarDevices.forEach(d => {
+                const maxDist = 50; // clamp at 50m
+                let dist = d.distance || maxDist;
+                if (dist > maxDist) dist = maxDist;
+
+                const r = (dist / maxDist) * (Math.min(w, h) / 2 * 0.9);
+                // Hash angle
+                const angle = (parseInt(d.bssid.replace(/:/g, '').slice(-4), 16) % 360) * (Math.PI / 180);
+
+                const x = cx + r * Math.cos(angle);
+                const y = cy + r * Math.sin(angle);
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = d.type === 'BLE' ? '#a78bfa' : '#38bdf8';
+                if (d.score > 20) ctx.fillStyle = '#ef4444';
+                ctx.fill();
+
+                ctx.font = '10px monospace';
+                ctx.fillStyle = '#aaa';
+                ctx.fillText(d.ssid.substring(0, 8), x + 6, y + 3);
+            });
+
+            requestAnimationFrame(drawRadar);
+        }
+
+        setInterval(updateData, 2000);
+        updateData();
+        drawRadar();
+
+        // Timer
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('uptime').innerText = now.toLocaleTimeString();
+        }, 1000);
+    </script>
+</body>
+
+</html>
